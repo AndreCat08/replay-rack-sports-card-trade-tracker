@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Replay Rack — Sports Card Trade Tracker</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <div class="brand">
+        <h1>Replay Rack</h1>
+        <span>Sports Card Trade Tracker</span>
+      </div>
+    </header>
+
+    <!-- Loading Indicator -->
+    <div id="loadingBanner" class="banner banner-loading hidden" role="status" aria-live="polite">
+      Loading your binder trades...
+    </div>
+
+    <!-- Persistent Error Surface -->
+    <div id="errorBanner" class="banner banner-error hidden" role="alert" aria-live="assertive">
+      <span id="errorMessage"></span>
+      <button id="errorDismiss" class="btn btn-danger-ghost btn-sm" type="button" aria-label="Dismiss message">Dismiss</button>
+    </div>
+
+    <!-- Summary Bar -->
+    <section class="summary-section" aria-label="Trade Summary">
+      <div id="summaryBar" class="summary-bar"></div>
+    </section>
+
+    <!-- Trade Form -->
+    <section class="form-panel" aria-labelledby="formHeading">
+      <h2 id="formHeading">Log Card Trade</h2>
+      <form id="tradeForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="playerInput">Player Name</label>
+            <input type="text" id="playerInput" name="player" required placeholder="e.g. Ken Griffey Jr.">
+          </div>
+          <div class="form-field">
+            <label for="sportInput">Sport</label>
+            <input type="text" id="sportInput" name="sport" required placeholder="e.g. Baseball">
+          </div>
+          <div class="form-field">
+            <label for="yearInput">Card Year</label>
+            <input type="number" id="yearInput" name="year" required min="1850" max="2100" placeholder="1989">
+          </div>
+          <div class="form-field">
+            <label for="conditionSelect">Condition</label>
+            <select id="conditionSelect" name="condition" required>
+              <option value="Mint">Mint</option>
+              <option value="Near Mint" selected>Near Mint</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="partnerInput">Trade Partner</label>
+            <input type="text" id="partnerInput" name="partner" required placeholder="Friend's Name">
+          </div>
+          <div class="form-field">
+            <label for="directionSelect">Trade Direction</label>
+            <select id="directionSelect" name="direction" required>
+              <option value="Sent">Sent (Card given away)</option>
+              <option value="Received">Received (Card obtained)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="dateInput">Deal Date</label>
+            <input type="date" id="dateInput" name="date" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">+ Log Trade</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Binder List -->
+    <section class="binder-section" aria-labelledby="binderHeading">
+      <h2 id="binderHeading">Binder Trades</h2>
+      <div id="tradeList" class="binder-grid" role="feed" aria-busy="false"></div>
+    </section>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
