@@ -39,11 +39,11 @@
         <div class="form-grid">
           <div class="form-field">
             <label for="playerInput">Player Name</label>
-            <input type="text" id="playerInput" name="player" required placeholder="e.g. Ken Griffey Jr.">
+            <input type="text" id="playerInput" name="player" required maxlength="100" autocomplete="off" placeholder="e.g. Ken Griffey Jr.">
           </div>
           <div class="form-field">
             <label for="sportInput">Sport</label>
-            <input type="text" id="sportInput" name="sport" required placeholder="e.g. Baseball">
+            <input type="text" id="sportInput" name="sport" required maxlength="40" autocomplete="off" placeholder="e.g. Baseball">
           </div>
           <div class="form-field">
             <label for="yearInput">Card Year</label>
@@ -60,7 +60,7 @@
           </div>
           <div class="form-field">
             <label for="partnerInput">Trade Partner</label>
-            <input type="text" id="partnerInput" name="partner" required placeholder="Friend's Name">
+            <input type="text" id="partnerInput" name="partner" required maxlength="100" autocomplete="off" placeholder="Friend's Name">
           </div>
           <div class="form-field">
             <label for="directionSelect">Trade Direction</label>
@@ -83,7 +83,7 @@
     <!-- Binder List -->
     <section class="binder-section" aria-labelledby="binderHeading">
       <h2 id="binderHeading">Binder Trades</h2>
-      <div id="tradeList" class="binder-grid" role="feed" aria-busy="false"></div>
+      <div id="tradeList" class="binder-grid" role="list" aria-live="polite"></div>
     </section>
   </div>
 

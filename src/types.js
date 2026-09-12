@@ -10,7 +10,7 @@
  * @property {CardCondition} condition
  * @property {string} partner
  * @property {TradeDirection} direction
- * @property {string} date
+ * @property {`${number}-${number}-${number}`} date
  * @property {number} createdAt
  * 
  * @typedef {Object} TradeSummary

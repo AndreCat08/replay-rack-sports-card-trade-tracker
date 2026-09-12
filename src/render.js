@@ -67,12 +67,13 @@ export function renderTradeList(container, trades, onDelete) {
   }
 
   for (const trade of trades) {
-    const card = createElement('article', { className: `trade-card ${trade.direction.toLowerCase()}`, 'data-id': trade.id });
+    const card = createElement('article', { className: `trade-card ${trade.direction.toLowerCase()}`, 'data-id': trade.id, role: 'listitem' });
 
     // Header strip
     const header = createElement('div', { className: 'card-header' });
     const dirBadge = createElement('span', { className: `badge badge-${trade.direction.toLowerCase()}` }, trade.direction);
-    const dateBadge = createElement('time', { className: 'card-date' }, trade.date);
+    const date = new Date(`${trade.date}T00:00:00`);
+    const dateBadge = createElement('time', { className: 'card-date', datetime: trade.date }, new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date));
     header.append(dirBadge, dateBadge);
 
     // Player & Sport
@@ -102,12 +103,14 @@ export function renderTradeList(container, trades, onDelete) {
         onDelete(trade.id);
       } else {
         delBtn.setAttribute('data-confirming', 'true');
-        delBtn.textContent = 'Confirm?';
+        delBtn.setAttribute('aria-label', `Confirm delete trade for ${trade.player}`);
+        delBtn.textContent = 'Confirm delete';
         delBtn.classList.add('btn-danger');
         delBtn.classList.remove('btn-danger-ghost');
 
         confirmTimer = setTimeout(() => {
           delBtn.removeAttribute('data-confirming');
+          delBtn.setAttribute('aria-label', `Delete trade for ${trade.player}`);
           delBtn.textContent = 'Delete';
           delBtn.classList.remove('btn-danger');
           delBtn.classList.add('btn-danger-ghost');

@@ -248,9 +248,11 @@ input:focus-visible, select:focus-visible, button:focus-visible {
   transition: transform var(--transition), border-color var(--transition);
 }
 
-.trade-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .trade-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
 }
 
 .trade-card.sent {
@@ -296,6 +298,7 @@ input:focus-visible, select:focus-visible, button:focus-visible {
   font-size: 1.15rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
 }
 
 .card-meta {
@@ -333,6 +336,8 @@ input:focus-visible, select:focus-visible, button:focus-visible {
 
 .deal-partner {
   color: var(--text);
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .card-actions {

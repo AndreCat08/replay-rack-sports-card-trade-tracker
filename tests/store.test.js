@@ -29,6 +29,41 @@ test('sanitizeTrade rejects invalid values', () => {
   assert.equal(sanitizeTrade({ id: '1', player: 'P', sport: 'S', year: 2020, condition: 'Mint', direction: 'Lost' }), null);
 });
 
+test('sanitizeTrade rejects invalid calendar dates and oversized text', () => {
+  const valid = {
+    id: 't-123',
+    player: 'Michael Jordan',
+    sport: 'Basketball',
+    year: 1986,
+    condition: 'Mint',
+    partner: 'Dave',
+    direction: 'Sent',
+    date: '2024-05-12'
+  };
+
+  assert.equal(sanitizeTrade({ ...valid, date: '2024-02-31' }), null);
+  assert.equal(sanitizeTrade({ ...valid, date: '2024-13-01' }), null);
+  assert.equal(sanitizeTrade({ ...valid, player: 'x'.repeat(101) }), null);
+  assert.equal(sanitizeTrade({ ...valid, sport: 'x'.repeat(41) }), null);
+  assert.equal(sanitizeTrade({ ...valid, partner: 'x'.repeat(101) }), null);
+});
+
+test('sanitizeTrade replaces non-finite createdAt values', () => {
+  const valid = {
+    id: 't-123',
+    player: 'Michael Jordan',
+    sport: 'Basketball',
+    year: 1986,
+    condition: 'Mint',
+    partner: 'Dave',
+    direction: 'Sent',
+    date: '2024-05-12'
+  };
+
+  assert.ok(Number.isFinite(sanitizeTrade({ ...valid, createdAt: NaN })?.createdAt));
+  assert.ok(Number.isFinite(sanitizeTrade({ ...valid, createdAt: Infinity })?.createdAt));
+});
+
 test('parseStoredTrades defensive recovery', () => {
   const rawEmpty = parseStoredTrades(null);
   assert.equal(rawEmpty.trades.length, 0);

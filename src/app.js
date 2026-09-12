@@ -32,13 +32,17 @@ function clearError() {
 errorDismiss?.addEventListener('click', clearError);
 
 /**
- * Persists current trades to localStorage
+ * Persists trades to localStorage
+ * @param {import('./types.js').Trade[]} nextTrades
+ * @returns {boolean}
  */
-function saveState() {
+function saveState(nextTrades) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextTrades));
+    return true;
   } catch (err) {
-    showError('Storage save failed. Quota may be exceeded or access blocked.');
+    showError('Storage save failed. No changes were made.');
+    return false;
   }
 }
 
@@ -60,8 +64,9 @@ function updateViews() {
  * @param {string} id
  */
 function handleDelete(id) {
-  trades = trades.filter(t => t.id !== id);
-  saveState();
+  const nextTrades = trades.filter(t => t.id !== id);
+  if (!saveState(nextTrades)) return;
+  trades = nextTrades;
   updateViews();
 }
 
@@ -69,10 +74,10 @@ function handleDelete(id) {
  * Setup form handling
  */
 function setupForm() {
-  // Pre-fill today's date in input
   const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('dateInput'));
   if (dateInput && !dateInput.value) {
-    dateInput.value = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   }
 
   tradeForm?.addEventListener('submit', (e) => {
@@ -81,7 +86,7 @@ function setupForm() {
 
     const fd = new FormData(tradeForm);
     const rawEntry = {
-      id: 'trade_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      id: crypto.randomUUID(),
       player: String(fd.get('player') || '').trim(),
       sport: String(fd.get('sport') || '').trim(),
       year: Number(fd.get('year')),
@@ -98,14 +103,15 @@ function setupForm() {
       return;
     }
 
-    trades.unshift(sanitized);
-    saveState();
+    const nextTrades = [sanitized, ...trades];
+    if (!saveState(nextTrades)) return;
+    trades = nextTrades;
     updateViews();
 
-    // Reset fields except date
     const currentDate = dateInput ? dateInput.value : '';
     tradeForm.reset();
     if (dateInput) dateInput.value = currentDate;
+    document.getElementById('playerInput')?.focus();
   });
 }
 
@@ -122,10 +128,10 @@ export function initApp() {
     const parsed = parseStoredTrades(raw);
     trades = parsed.trades;
 
-    if (parsed.corruptCount > 0) {
-      showError(`Notice: ${parsed.corruptCount} unreadable trade(s) skipped from storage.`);
-    } else if (parsed.error) {
+    if (parsed.error) {
       showError(parsed.error);
+    } else if (parsed.corruptCount > 0) {
+      showError(`Notice: ${parsed.corruptCount} unreadable trade(s) skipped from storage.`);
     }
   } catch (err) {
     showError('Unable to read localStorage. Persistence may be disabled in private mode.');

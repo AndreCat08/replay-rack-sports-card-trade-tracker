@@ -1,6 +1,14 @@
 import { CONDITIONS, DIRECTIONS } from './types.js';
 
 export const STORAGE_KEY = 'replay_rack_trades_v1';
+export const TEXT_LIMITS = Object.freeze({ player: 100, sport: 40, partner: 100 });
+
+function isValidDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return year >= 1 && date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
 
 /**
  * Validates a single trade object
@@ -11,16 +19,16 @@ export function sanitizeTrade(item) {
   if (!item || typeof item !== 'object') return null;
   const t = /** @type {Record<string, unknown>} */ (item);
   if (typeof t.id !== 'string' || !t.id.trim()) return null;
-  if (typeof t.player !== 'string' || !t.player.trim()) return null;
-  if (typeof t.sport !== 'string' || !t.sport.trim()) return null;
-  
+  if (typeof t.player !== 'string' || !t.player.trim() || t.player.trim().length > TEXT_LIMITS.player) return null;
+  if (typeof t.sport !== 'string' || !t.sport.trim() || t.sport.trim().length > TEXT_LIMITS.sport) return null;
+
   const year = Number(t.year);
   if (!Number.isInteger(year) || year < 1850 || year > 2100) return null;
-  
-  if (typeof t.condition !== 'string' || !CONDITIONS.includes(/** @type {any} */ (t.condition))) return null;
-  if (typeof t.partner !== 'string' || !t.partner.trim()) return null;
-  if (typeof t.direction !== 'string' || !DIRECTIONS.includes(/** @type {any} */ (t.direction))) return null;
-  if (typeof t.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(t.date)) return null;
+
+  if (typeof t.condition !== 'string' || !CONDITIONS.includes(/** @type {import('./types.js').CardCondition} */ (t.condition))) return null;
+  if (typeof t.partner !== 'string' || !t.partner.trim() || t.partner.trim().length > TEXT_LIMITS.partner) return null;
+  if (typeof t.direction !== 'string' || !DIRECTIONS.includes(/** @type {import('./types.js').TradeDirection} */ (t.direction))) return null;
+  if (typeof t.date !== 'string' || !isValidDate(t.date)) return null;
 
   return {
     id: t.id.trim(),
@@ -30,8 +38,8 @@ export function sanitizeTrade(item) {
     condition: /** @type {import('./types.js').CardCondition} */ (t.condition),
     partner: t.partner.trim(),
     direction: /** @type {import('./types.js').TradeDirection} */ (t.direction),
-    date: t.date,
-    createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now()
+    date: /** @type {`${number}-${number}-${number}`} */ (t.date),
+      createdAt: typeof t.createdAt === 'number' && Number.isFinite(t.createdAt) ? t.createdAt : Date.now()
   };
 }
 
