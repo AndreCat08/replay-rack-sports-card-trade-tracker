@@ -3,6 +3,8 @@ import { renderSummary, renderTradeList } from './render.js';
 import type { Trade } from './types.js';
 
 let trades: Trade[] = [];
+let enteringId: string | null = null;
+let hasRendered = false;
 
 const loadingBanner = document.getElementById('loadingBanner');
 const errorBanner = document.getElementById('errorBanner');
@@ -50,11 +52,13 @@ function saveState(nextTrades: Trade[]): boolean {
 function updateViews(): void {
   const summary = calculateSummary(trades);
   if (summaryContainer) {
-    renderSummary(summaryContainer, summary);
+    renderSummary(summaryContainer, summary, hasRendered);
   }
   if (tradeListContainer) {
-    renderTradeList(tradeListContainer, trades, handleDelete);
+    renderTradeList(tradeListContainer, trades, handleDelete, enteringId ?? undefined);
   }
+  enteringId = null;
+  hasRendered = true;
 }
 
 /**
@@ -103,6 +107,7 @@ function setupForm(): void {
     const nextTrades = [sanitized, ...trades];
     if (!saveState(nextTrades)) return;
     trades = nextTrades;
+    enteringId = sanitized.id;
     updateViews();
 
     const currentDate = dateInput ? dateInput.value : '';

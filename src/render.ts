@@ -26,7 +26,7 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
 /**
  * Renders the summary stats row.
  */
-export function renderSummary(container: HTMLElement, summary: TradeSummary): void {
+export function renderSummary(container: HTMLElement, summary: TradeSummary, animate = false): void {
   container.replaceChildren();
 
   const cards = [
@@ -38,7 +38,7 @@ export function renderSummary(container: HTMLElement, summary: TradeSummary): vo
   for (const card of cards) {
     const item = createElement('div', { className: `summary-card ${card.badgeClass}` });
     const label = createElement('span', { className: 'summary-label' }, card.label);
-    const value = createElement('span', { className: 'summary-val' }, String(card.val));
+    const value = createElement('span', { className: `summary-val${animate ? ' pop' : ''}` }, String(card.val));
     item.append(label, value);
     container.appendChild(item);
   }
@@ -50,7 +50,8 @@ export function renderSummary(container: HTMLElement, summary: TradeSummary): vo
 export function renderTradeList(
   container: HTMLElement,
   trades: Trade[],
-  onDelete: (id: string) => void
+  onDelete: (id: string) => void,
+  newTradeId?: string
 ): void {
   container.replaceChildren();
 
@@ -77,8 +78,9 @@ export function renderTradeList(
   }
 
   for (const trade of trades) {
+    const isNew = trade.id === newTradeId;
     const card = createElement('article', {
-      className: `trade-card ${trade.direction.toLowerCase()}`,
+      className: `trade-card ${trade.direction.toLowerCase()}${isNew ? ' entering' : ''}`,
       'data-id': trade.id,
       role: 'listitem'
     });
@@ -138,7 +140,9 @@ export function renderTradeList(
     delBtn.addEventListener('click', () => {
       if (delBtn.getAttribute('data-confirming') === 'true') {
         if (confirmTimer) clearTimeout(confirmTimer);
-        onDelete(trade.id);
+        card.classList.add('leaving');
+        delBtn.disabled = true;
+        setTimeout(() => onDelete(trade.id), 180);
       } else {
         delBtn.setAttribute('data-confirming', 'true');
         delBtn.setAttribute('aria-label', `Confirm delete trade for ${trade.player}`);
