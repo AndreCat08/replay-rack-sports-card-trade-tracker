@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeTrade, parseStoredTrades, calculateSummary } from '../src/store.js';
+import { sanitizeTrade, parseStoredTrades, calculateSummary } from '../dist/store.js';
 
 test('sanitizeTrade valid entry', () => {
   const valid = {
@@ -85,7 +85,7 @@ test('parseStoredTrades defensive recovery', () => {
 });
 
 test('calculateSummary counts correctly', () => {
-  /** @type {import('../src/types.js').Trade[]} */
+  /** @type {import('../dist/types.js').Trade[]} */
   const trades = [
     { id: '1', player: 'A', sport: 'B', year: 2000, condition: 'Mint', partner: 'X', direction: 'Sent', date: '2020-01-01', createdAt: 1 },
     { id: '2', player: 'C', sport: 'D', year: 2001, condition: 'Good', partner: 'Y', direction: 'Received', date: '2020-01-02', createdAt: 2 },

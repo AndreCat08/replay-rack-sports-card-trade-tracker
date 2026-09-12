@@ -1,8 +1,8 @@
 import { STORAGE_KEY, parseStoredTrades, calculateSummary, sanitizeTrade } from './store.js';
 import { renderSummary, renderTradeList } from './render.js';
+import type { Trade } from './types.js';
 
-/** @type {import('./types.js').Trade[]} */
-let trades = [];
+let trades: Trade[] = [];
 
 const loadingBanner = document.getElementById('loadingBanner');
 const errorBanner = document.getElementById('errorBanner');
@@ -10,20 +10,19 @@ const errorMessage = document.getElementById('errorMessage');
 const errorDismiss = document.getElementById('errorDismiss');
 const summaryContainer = document.getElementById('summaryBar');
 const tradeListContainer = document.getElementById('tradeList');
-const tradeForm = /** @type {HTMLFormElement} */ (document.getElementById('tradeForm'));
+const tradeForm = document.getElementById('tradeForm') as HTMLFormElement | null;
 
 /**
- * Surfaces error banner persistently
- * @param {string} msg
+ * Surfaces error banner persistently.
  */
-function showError(msg) {
+function showError(msg: string): void {
   if (errorMessage && errorBanner) {
     errorMessage.textContent = msg;
     errorBanner.classList.remove('hidden');
   }
 }
 
-function clearError() {
+function clearError(): void {
   if (errorBanner) {
     errorBanner.classList.add('hidden');
   }
@@ -32,24 +31,23 @@ function clearError() {
 errorDismiss?.addEventListener('click', clearError);
 
 /**
- * Persists trades to localStorage
- * @param {import('./types.js').Trade[]} nextTrades
- * @returns {boolean}
+ * Persists trades to localStorage.
+ * Returns boolean indicating whether write succeeded.
  */
-function saveState(nextTrades) {
+function saveState(nextTrades: Trade[]): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextTrades));
     return true;
-  } catch (err) {
+  } catch {
     showError('Storage save failed. No changes were made.');
     return false;
   }
 }
 
 /**
- * Refresh UI views
+ * Refreshes UI views.
  */
-function updateViews() {
+function updateViews(): void {
   const summary = calculateSummary(trades);
   if (summaryContainer) {
     renderSummary(summaryContainer, summary);
@@ -60,27 +58,26 @@ function updateViews() {
 }
 
 /**
- * Handle deletion of a trade
- * @param {string} id
+ * Handles deletion of a trade by ID.
  */
-function handleDelete(id) {
-  const nextTrades = trades.filter(t => t.id !== id);
+function handleDelete(id: string): void {
+  const nextTrades = trades.filter((t) => t.id !== id);
   if (!saveState(nextTrades)) return;
   trades = nextTrades;
   updateViews();
 }
 
 /**
- * Setup form handling
+ * Sets up form submission and default values.
  */
-function setupForm() {
-  const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('dateInput'));
+function setupForm(): void {
+  const dateInput = document.getElementById('dateInput') as HTMLInputElement | null;
   if (dateInput && !dateInput.value) {
     const today = new Date();
     dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   }
 
-  tradeForm?.addEventListener('submit', (e) => {
+  tradeForm?.addEventListener('submit', (e: SubmitEvent) => {
     e.preventDefault();
     clearError();
 
@@ -111,14 +108,14 @@ function setupForm() {
     const currentDate = dateInput ? dateInput.value : '';
     tradeForm.reset();
     if (dateInput) dateInput.value = currentDate;
-    document.getElementById('playerInput')?.focus();
+    (document.getElementById('playerInput') as HTMLInputElement | null)?.focus();
   });
 }
 
 /**
- * Initialize application state and UI
+ * Initializes application state and UI.
  */
-export function initApp() {
+export function initApp(): void {
   if (loadingBanner) {
     loadingBanner.classList.remove('hidden');
   }
@@ -133,7 +130,7 @@ export function initApp() {
     } else if (parsed.corruptCount > 0) {
       showError(`Notice: ${parsed.corruptCount} unreadable trade(s) skipped from storage.`);
     }
-  } catch (err) {
+  } catch {
     showError('Unable to read localStorage. Persistence may be disabled in private mode.');
   } finally {
     if (loadingBanner) {

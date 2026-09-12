@@ -1,11 +1,14 @@
+import type { Trade, TradeSummary } from './types.js';
+
 /**
- * Safe text node helper to structurally prevent XSS
- * @param {string} tag
- * @param {Record<string, string>} [attrs]
- * @param {string} [text]
- * @returns {HTMLElement}
+ * Safe element creation helper.
+ * Uses textContent to structurally eliminate XSS.
  */
-export function createElement(tag, attrs = {}, text = '') {
+export function createElement<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string> = {},
+  text = ''
+): HTMLElementTagNameMap[K] {
   const el = document.createElement(tag);
   for (const [key, val] of Object.entries(attrs)) {
     if (key === 'className') {
@@ -21,11 +24,9 @@ export function createElement(tag, attrs = {}, text = '') {
 }
 
 /**
- * Renders the summary bar
- * @param {HTMLElement} container
- * @param {import('./types.js').TradeSummary} summary
+ * Renders the summary stats row.
  */
-export function renderSummary(container, summary) {
+export function renderSummary(container: HTMLElement, summary: TradeSummary): void {
   container.replaceChildren();
 
   const cards = [
@@ -44,21 +45,30 @@ export function renderSummary(container, summary) {
 }
 
 /**
- * Renders trade list in binder style
- * @param {HTMLElement} container
- * @param {import('./types.js').Trade[]} trades
- * @param {(id: string) => void} onDelete
+ * Renders the card trade items into a binder list layout.
  */
-export function renderTradeList(container, trades, onDelete) {
+export function renderTradeList(
+  container: HTMLElement,
+  trades: Trade[],
+  onDelete: (id: string) => void
+): void {
   container.replaceChildren();
 
   if (trades.length === 0) {
     const empty = createElement('div', { className: 'empty-state' });
     const title = createElement('h3', { className: 'empty-title' }, 'Binder is Empty');
-    const desc = createElement('p', { className: 'empty-desc' }, 'No trades logged yet. Fill out the form above to record your first card deal.');
-    const cta = createElement('button', { className: 'btn btn-primary cta-btn', type: 'button' }, '+ Log First Trade');
+    const desc = createElement(
+      'p',
+      { className: 'empty-desc' },
+      'No trades logged yet. Fill out the form above to record your first card deal.'
+    );
+    const cta = createElement(
+      'button',
+      { className: 'btn btn-primary cta-btn', type: 'button' },
+      '+ Log First Trade'
+    );
     cta.addEventListener('click', () => {
-      const input = document.getElementById('playerInput');
+      const input = document.getElementById('playerInput') as HTMLInputElement | null;
       input?.focus();
     });
     empty.append(title, desc, cta);
@@ -67,13 +77,25 @@ export function renderTradeList(container, trades, onDelete) {
   }
 
   for (const trade of trades) {
-    const card = createElement('article', { className: `trade-card ${trade.direction.toLowerCase()}`, 'data-id': trade.id, role: 'listitem' });
+    const card = createElement('article', {
+      className: `trade-card ${trade.direction.toLowerCase()}`,
+      'data-id': trade.id,
+      role: 'listitem'
+    });
 
     // Header strip
     const header = createElement('div', { className: 'card-header' });
-    const dirBadge = createElement('span', { className: `badge badge-${trade.direction.toLowerCase()}` }, trade.direction);
+    const dirBadge = createElement(
+      'span',
+      { className: `badge badge-${trade.direction.toLowerCase()}` },
+      trade.direction
+    );
     const date = new Date(`${trade.date}T00:00:00`);
-    const dateBadge = createElement('time', { className: 'card-date', datetime: trade.date }, new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date));
+    const dateBadge = createElement(
+      'time',
+      { className: 'card-date', datetime: trade.date },
+      new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+    );
     header.append(dirBadge, dateBadge);
 
     // Player & Sport
@@ -82,24 +104,40 @@ export function renderTradeList(container, trades, onDelete) {
     const metaInfo = createElement('div', { className: 'card-meta' });
     const sportTag = createElement('span', { className: 'card-tag' }, trade.sport);
     const yearTag = createElement('span', { className: 'card-tag' }, String(trade.year));
-    const condTag = createElement('span', { className: `card-tag condition-${trade.condition.toLowerCase().replace(/\s+/g, '-')}` }, trade.condition);
+    const condTag = createElement(
+      'span',
+      { className: `card-tag condition-${trade.condition.toLowerCase().replace(/\s+/g, '-')}` },
+      trade.condition
+    );
     metaInfo.append(sportTag, yearTag, condTag);
     mainInfo.append(playerName, metaInfo);
 
     // Partner Deal details
     const dealInfo = createElement('div', { className: 'deal-info' });
-    const dealLabel = createElement('span', { className: 'deal-label' }, trade.direction === 'Sent' ? 'Sent to:' : 'Received from:');
+    const dealLabel = createElement(
+      'span',
+      { className: 'deal-label' },
+      trade.direction === 'Sent' ? 'Sent to:' : 'Received from:'
+    );
     const partnerName = createElement('strong', { className: 'deal-partner' }, trade.partner);
     dealInfo.append(dealLabel, partnerName);
 
     // Action / Delete with 2-step confirmation
     const actions = createElement('div', { className: 'card-actions' });
-    const delBtn = createElement('button', { className: 'btn btn-danger-ghost btn-sm', type: 'button', 'aria-label': `Delete trade for ${trade.player}` }, 'Delete');
+    const delBtn = createElement(
+      'button',
+      {
+        className: 'btn btn-danger-ghost btn-sm',
+        type: 'button',
+        'aria-label': `Delete trade for ${trade.player}`
+      },
+      'Delete'
+    );
 
-    let confirmTimer = null;
+    let confirmTimer: ReturnType<typeof setTimeout> | null = null;
     delBtn.addEventListener('click', () => {
       if (delBtn.getAttribute('data-confirming') === 'true') {
-        clearTimeout(confirmTimer);
+        if (confirmTimer) clearTimeout(confirmTimer);
         onDelete(trade.id);
       } else {
         delBtn.setAttribute('data-confirming', 'true');
@@ -119,7 +157,6 @@ export function renderTradeList(container, trades, onDelete) {
     });
 
     actions.appendChild(delBtn);
-
     card.append(header, mainInfo, dealInfo, actions);
     container.appendChild(card);
   }
